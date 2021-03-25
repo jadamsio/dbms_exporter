@@ -8,7 +8,7 @@ BUILD_CONTAINER_NAME = ncabatoff/dbms_exporter_builder:${FREETDS_VERSION}
 TAG_VERSION ?= $(shell git describe --tags --abbrev=0)
 
 # Possible BUILDTAGS settings are postgres, freetds, and odbc.
-DRIVERS = postgres freetds
+DRIVERS = postgres freetds tds
 # Use make LDFLAGS= if you want to build with tag ODBC.
 LDFLAGS = -extldflags=-static
 

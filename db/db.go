@@ -180,9 +180,14 @@ func ToFloat64(t interface{}, r *regexp.Regexp) (float64, bool) {
 		return dbStringToFloat64(string(v), r)
 	case string:
 		return dbStringToFloat64(v, r)
+	// TDS returns a tds object hiding a RAT number so just handle
+	// the general case of anything that can be parsed as a float
+	case fmt.Stringer:
+		return dbStringToFloat64(v.String(), nil)
 	case nil:
 		return math.NaN(), true
 	default:
+		log.Infof("Unexpected type %T in ToFloat64 :", v)
 		return math.NaN(), false
 	}
 }
