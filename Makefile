@@ -16,16 +16,16 @@ all: vet test dbms_exporter
 
 # Simple go build
 dbms_exporter: $(GO_SRC)
-	go build -ldflags '$(LDFLAGS) -X main.Version=$(TAG_VERSION)' -o dbms_exporter -tags '$(DRIVERS)' .
+	CGO_ENABLED=0 go build -ldflags '$(LDFLAGS) -X main.Version=$(TAG_VERSION)' -o dbms_exporter -tags '$(DRIVERS)' .
 
 docker: Dockerfile $(GO_SRC)
 	docker build --build-arg drivers="$(DRIVERS)" --build-arg ldflags="$(LDFLAGS)" -t $(CONTAINER_NAME) .
 
 vet:
-	go vet . ./config ./common ./db ./recipes
+	CGO_ENABLED=0 go vet . ./config ./common ./db ./recipes
 
 test:
-	go test -v . ./config ./common ./db ./recipes
+	CGO_ENABLED=0 go test -v . ./config ./common ./db ./recipes
 
 test-integration:
 	tests/test-smoke
