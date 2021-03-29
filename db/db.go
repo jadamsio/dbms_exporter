@@ -58,6 +58,7 @@ type dbConn interface {
 // dbResultSet is
 type dbResultSet interface {
 	Next() bool
+	NextResultSet() bool
 	Scan(dest ...interface{}) error
 	Close() error
 	Columns() ([]string, error)
@@ -74,7 +75,6 @@ type ScannedResultSet struct {
 }
 
 func scanResultSet(rs dbResultSet) (*ScannedResultSet, error) {
-	defer rs.Close()
 
 	columnNames, err := rs.Columns()
 	if err != nil {
@@ -101,14 +101,22 @@ func scanResultSet(rs dbResultSet) (*ScannedResultSet, error) {
 }
 
 func scanResultSets(rss []dbResultSet) ([]ScannedResultSet, error) {
-	srss := make([]ScannedResultSet, 0, len(rss))
+	var srss []ScannedResultSet
+
 	for i, rs := range rss {
-		srs, err := scanResultSet(rs)
-		if err != nil {
-			return nil, fmt.Errorf("Error scanning resultset %d: %v", i, err)
+		for {
+			srs, err := scanResultSet(rs)
+			if err != nil {
+				return nil, fmt.Errorf("Error scanning resultset %d: %v", i, err)
+			}
+			srss = append(srss, *srs)
+			if !rs.NextResultSet() {
+				break
+			}
 		}
-		srss = append(srss, *srs)
+		rs.Close()
 	}
+
 	return srss, nil
 }
 
